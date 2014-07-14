@@ -23,8 +23,20 @@ module CarrierWave
       # may not work if using stip, since orientation is in the EXIF data
       def rotate
         manipulate! do |img|
-          img = img.auto_orient
+          img.auto_orient
           img = yield(img) if block_given?
+          img
+        end
+      end
+
+      # Adds a watermark at the center
+      def watermark(source_watermark)
+        manipulate! do |img|
+          watermark = ::MiniMagick::Image.open(source_watermark)
+          watermark.resize img[:dimensions].join('x')
+          img = img.composite(watermark, 'png') do |c|
+            c.gravity "center"
+          end
           img
         end
       end
